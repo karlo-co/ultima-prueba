@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-
+    private Button btnCancelarEdicion;
     private EditText etNombre, etCategoria, etHora, etEstado;
     private Button btnGuardar, btnCerrarSesion;
     private RecyclerView rvHabitos;
@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
         etEstado = findViewById(R.id.etEstado);
         btnGuardar = findViewById(R.id.btnGuardar);
         btnCerrarSesion = findViewById(R.id.btnCerrarSesion);
+        btnCancelarEdicion = findViewById(R.id.btnCancelarEdicion);
         rvHabitos = findViewById(R.id.rvHabitos);
 
         listaHabitos = new ArrayList<>();
@@ -68,9 +69,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         rvHabitos.setAdapter(adapter);
-
+        etHora.setOnClickListener(v -> mostrarSelectorHora());
         btnGuardar.setOnClickListener(v -> guardarHabito());
-
+        btnCancelarEdicion.setOnClickListener(v -> limpiarFormulario());
         btnCerrarSesion.setOnClickListener(v -> {
             mAuth.signOut();
             startActivity(new Intent(MainActivity.this, LoginActivity.class));
@@ -145,6 +146,7 @@ public class MainActivity extends AppCompatActivity {
         etHora.setText(habito.getHoraRecordatorio());
         etEstado.setText(habito.getEstado());
         btnGuardar.setText("Actualizar Hábito");
+        btnCancelarEdicion.setVisibility(android.view.View.VISIBLE);
     }
 
     private void confirmarEliminar(Habito habito) {
@@ -169,5 +171,17 @@ public class MainActivity extends AppCompatActivity {
         etEstado.setText("");
         habitoEnEdicion = null;
         btnGuardar.setText("Guardar Hábito");
+        btnCancelarEdicion.setVisibility(android.view.View.GONE);
+    }
+
+    private void mostrarSelectorHora() {
+        java.util.Calendar calendario = java.util.Calendar.getInstance();
+        int horaActual = calendario.get(java.util.Calendar.HOUR_OF_DAY);
+        int minutoActual = calendario.get(java.util.Calendar.MINUTE);
+
+        new android.app.TimePickerDialog(this, (view, hourOfDay, minute) -> {
+            String horaFormateada = String.format(java.util.Locale.getDefault(), "%02d:%02d", hourOfDay, minute);
+            etHora.setText(horaFormateada);
+        }, horaActual, minutoActual, true).show();
     }
 }
