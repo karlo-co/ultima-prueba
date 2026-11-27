@@ -1,86 +1,141 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Pantalla principal de gestión de hábitos saludables -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/fondo_crema_saludable"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="@dimen/espacio_pantalla">
 
+    <!-- Encabezado con título de sección y botón de salir -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:layout_marginBottom="@dimen/espacio_minimo"
         android:gravity="center_vertical"
-        android:layout_marginBottom="12dp">
+        android:orientation="horizontal">
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Mis Hábitos"
-            android:textSize="22sp"
+            android:text="@string/titulo_mis_habitos"
+            android:textColor="@color/texto_principal"
+            android:textSize="@dimen/texto_titulo_pantalla"
             android:textStyle="bold" />
 
         <Button
             android:id="@+id/btnCerrarSesion"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Salir" />
+            android:layout_height="@dimen/alto_boton"
+            android:backgroundTint="@color/verde_salud_oscuro"
+            android:text="@string/btn_cerrar_sesion"
+            android:textColor="@color/texto_sobre_verde" />
     </LinearLayout>
 
-    <EditText
-        android:id="@+id/etNombre"
+    <!-- Correo del usuario activo -->
+    <TextView
+        android:id="@+id/tvUsuarioBienvenida"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Nombre del hábito (ej. Tomar 2L de agua)"
-        android:inputType="textCapSentences" />
+        android:layout_marginBottom="@dimen/espacio_mediano"
+        android:text="@string/etiqueta_usuario_cargando"
+        android:textColor="@color/texto_secundario"
+        android:textSize="@dimen/texto_secundario" />
 
+    <!-- Nombre del hábito -->
     <EditText
-        android:id="@+id/etCategoria"
+        android:id="@+id/etNombreHabito"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Categoría (ej. Salud, Deporte, Estudio)"
-        android:inputType="textCapWords" />
+        android:layout_height="@dimen/alto_boton"
+        android:backgroundTint="@color/verde_salud_primario"
+        android:hint="@string/hint_nombre_habito"
+        android:inputType="textCapSentences"
+        android:textColor="@color/texto_principal"
+        android:textColorHint="@color/texto_secundario"
+        android:textSize="@dimen/texto_cuerpo" />
 
+    <!-- Categoría del hábito -->
+    <EditText
+        android:id="@+id/etCategoriaHabito"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/alto_boton"
+        android:backgroundTint="@color/verde_salud_primario"
+        android:hint="@string/hint_categoria_habito"
+        android:inputType="textCapWords"
+        android:textColor="@color/texto_principal"
+        android:textColorHint="@color/texto_secundario"
+        android:textSize="@dimen/texto_cuerpo" />
+
+    <!-- Hora de recordatorio y estado del hábito -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
         <EditText
-            android:id="@+id/etHora"
+            android:id="@+id/etHoraHabito"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/alto_boton"
+            android:layout_marginEnd="@dimen/espacio_pequeno"
             android:layout_weight="1"
-            android:hint="Hora (toca para elegir)"
-            android:focusable="false"
+            android:backgroundTint="@color/verde_salud_primario"
             android:clickable="true"
-            android:layout_marginEnd="8dp" />
+            android:focusable="false"
+            android:hint="@string/hint_hora_habito"
+            android:textColor="@color/texto_principal"
+            android:textColorHint="@color/texto_secundario"
+            android:textSize="@dimen/texto_cuerpo" />
 
         <EditText
-            android:id="@+id/etEstado"
+            android:id="@+id/etEstadoHabito"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/alto_boton"
             android:layout_weight="1"
-            android:hint="Estado (Pendiente)"
-            android:inputType="textCapWords" />
+            android:backgroundTint="@color/verde_salud_primario"
+            android:hint="@string/hint_estado_habito"
+            android:inputType="textCapWords"
+            android:textColor="@color/texto_principal"
+            android:textColorHint="@color/texto_secundario"
+            android:textSize="@dimen/texto_cuerpo" />
     </LinearLayout>
 
+    <!-- Guardar o actualizar hábito -->
     <Button
-        android:id="@+id/btnGuardar"
+        android:id="@+id/btnGuardarHabito"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Guardar Hábito"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="12dp" />
+        android:layout_height="@dimen/alto_boton"
+        android:layout_marginTop="@dimen/espacio_pequeno"
+        android:layout_marginBottom="@dimen/espacio_pequeno"
+        android:backgroundTint="@color/verde_salud_primario"
+        android:text="@string/btn_guardar_habito"
+        android:textColor="@color/texto_sobre_verde" />
+
+    <!-- Cancelar edición -->
     <Button
         android:id="@+id/btnCancelarEdicion"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Cancelar Edición"
-        android:visibility="gone"
         style="?attr/materialButtonOutlinedStyle"
-        android:layout_marginBottom="12dp" />
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/alto_boton"
+        android:layout_marginBottom="@dimen/espacio_mediano"
+        android:text="@string/btn_cancelar_edicion"
+        android:textColor="@color/verde_salud_primario"
+        android:visibility="gone" />
 
+    <!-- Buscador por nombre o categoría -->
+    <EditText
+        android:id="@+id/etBuscarHabito"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/alto_boton"
+        android:layout_marginBottom="@dimen/espacio_pequeno"
+        android:backgroundTint="@color/verde_salud_primario"
+        android:hint="@string/hint_buscar_habito"
+        android:inputType="text"
+        android:textColor="@color/texto_principal"
+        android:textColorHint="@color/texto_secundario"
+        android:textSize="@dimen/texto_cuerpo" />
+
+    <!-- Listado de hábitos -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvHabitos"
         android:layout_width="match_parent"

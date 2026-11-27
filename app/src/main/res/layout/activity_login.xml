@@ -1,54 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Pantalla de login con piña pixelada centrada arriba y paleta saludable -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/fondo_crema_saludable"
+    android:gravity="center_horizontal"
     android:orientation="vertical"
-    android:gravity="center"
-    android:padding="24dp">
+    android:padding="@dimen/espacio_grande">
 
+    <!-- Piña pixelada centrada en la parte superior -->
+    <ImageView
+        android:id="@+id/ivPinaPixel"
+        android:layout_width="@dimen/tamano_pina_pixel"
+        android:layout_height="@dimen/tamano_pina_pixel"
+        android:layout_marginTop="@dimen/espacio_mediano"
+        android:layout_marginBottom="@dimen/espacio_mediano"
+        android:contentDescription="@string/login_desc_pina_pixel"
+        android:filterBitmap="false"
+        android:src="@drawable/ic_pina_pixel" />
+
+    <!-- Nombre de la aplicación -->
     <TextView
+        android:id="@+id/tvTituloApp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="HabitTrack"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp" />
+        android:text="@string/app_name"
+        android:textColor="@color/texto_principal"
+        android:textSize="@dimen/texto_titulo_login"
+        android:textStyle="bold" />
 
+    <!-- Subtítulo motivacional -->
     <TextView
+        android:id="@+id/tvSubtituloLogin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Inicia sesión o crea tu cuenta"
-        android:textSize="14sp"
-        android:layout_marginBottom="24dp" />
+        android:layout_marginTop="@dimen/espacio_minimo"
+        android:layout_marginBottom="@dimen/espacio_grande"
+        android:text="@string/login_subtitulo"
+        android:textColor="@color/texto_secundario"
+        android:textSize="@dimen/texto_secundario" />
 
+    <!-- Campo de correo electrónico -->
     <EditText
         android:id="@+id/etEmail"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Correo electrónico"
+        android:layout_height="@dimen/alto_boton"
+        android:layout_marginBottom="@dimen/espacio_mediano"
+        android:backgroundTint="@color/verde_salud_primario"
+        android:hint="@string/hint_correo"
         android:inputType="textEmailAddress"
-        android:layout_marginBottom="12dp" />
+        android:textColor="@color/texto_principal"
+        android:textColorHint="@color/texto_secundario"
+        android:textSize="@dimen/texto_cuerpo" />
 
+    <!-- Campo de contraseña -->
     <EditText
         android:id="@+id/etPassword"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Contraseña (mín. 6 caracteres)"
+        android:layout_height="@dimen/alto_boton"
+        android:layout_marginBottom="@dimen/espacio_grande"
+        android:backgroundTint="@color/verde_salud_primario"
+        android:hint="@string/hint_contrasena"
         android:inputType="textPassword"
-        android:layout_marginBottom="20dp" />
+        android:textColor="@color/texto_principal"
+        android:textColorHint="@color/texto_secundario"
+        android:textSize="@dimen/texto_cuerpo" />
 
+    <!-- Botón principal de inicio de sesión -->
     <Button
         android:id="@+id/btnLogin"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Iniciar Sesión"
-        android:layout_marginBottom="8dp" />
+        android:layout_height="@dimen/alto_boton"
+        android:backgroundTint="@color/verde_salud_primario"
+        android:text="@string/btn_iniciar_sesion"
+        android:textColor="@color/texto_sobre_verde"
+        android:textSize="@dimen/texto_cuerpo" />
 
+    <!-- Botón secundario para registrar cuenta nueva -->
     <Button
         android:id="@+id/btnRegistrar"
+        style="?attr/materialButtonOutlinedStyle"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Registrarse"
-        style="?attr/materialButtonOutlinedStyle" />
+        android:layout_height="@dimen/alto_boton"
+        android:layout_marginTop="@dimen/espacio_pequeno"
+        android:text="@string/btn_registrarse"
+        android:textColor="@color/verde_salud_primario"
+        android:textSize="@dimen/texto_cuerpo" />
 
 </LinearLayout>
