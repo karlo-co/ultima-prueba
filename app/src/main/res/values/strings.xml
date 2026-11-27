@@ -1,3 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Cadenas de texto de la aplicación HabitTrack -->
 <resources>
     <string name="app_name">HabitTrack</string>
+
+    <!-- Pantalla de inicio de sesión y registro -->
+    <string name="login_subtitulo">Construye hábitos saludables cada día</string>
+    <string name="login_desc_pina_pixel">Ícono pixelado de una piña saludable</string>
+    <string name="hint_correo">Correo electrónico</string>
+    <string name="hint_contrasena">Contraseña (mín. 6 caracteres)</string>
+    <string name="btn_iniciar_sesion">Iniciar sesión</string>
+    <string name="btn_registrarse">Registrarse</string>
+
+    <!-- Pantalla principal de hábitos -->
+    <string name="titulo_mis_habitos">Mis Hábitos Saludables</string>
+    <string name="btn_cerrar_sesion">Salir</string>
+    <string name="etiqueta_usuario_cargando">Usuario: cargando...</string>
+    <string name="hint_nombre_habito">Nombre del hábito (ej. Tomar 2L de agua)</string>
+    <string name="hint_categoria_habito">Categoría (ej. Salud, Deporte, Descanso)</string>
+    <string name="hint_hora_habito">Hora (toca para elegir)</string>
+    <string name="hint_estado_habito">Estado (Pendiente)</string>
+    <string name="btn_guardar_habito">Guardar Hábito</string>
+    <string name="btn_actualizar_habito">Actualizar Hábito</string>
+    <string name="btn_cancelar_edicion">Cancelar Edición</string>
+    <string name="hint_buscar_habito">Buscar hábito por nombre o categoría...</string>
+
+    <!-- Ítem del listado de hábitos -->
+    <string name="ejemplo_nombre_habito">Nombre del Hábito</string>
+    <string name="ejemplo_detalle_habito">Categoría · 08:30 hrs</string>
+    <string name="ejemplo_estado_habito">Estado: Pendiente</string>
+    <string name="btn_editar">Editar</string>
+    <string name="btn_eliminar">Eliminar</string>
 </resources>

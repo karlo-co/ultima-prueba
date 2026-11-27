@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dimensiones, espaciados y tamaños tipográficos centralizados -->
+<resources>
+    <!-- Márgenes y rellenos generales -->
+    <dimen name="espacio_pantalla">16dp</dimen>
+    <dimen name="espacio_grande">24dp</dimen>
+    <dimen name="espacio_mediano">12dp</dimen>
+    <dimen name="espacio_pequeno">8dp</dimen>
+    <dimen name="espacio_minimo">4dp</dimen>
+
+    <!-- Tamaños de componentes -->
+    <dimen name="tamano_pina_pixel">96dp</dimen>
+    <dimen name="alto_boton">48dp</dimen>
+    <dimen name="radio_tarjeta">12dp</dimen>
+    <dimen name="elevacion_tarjeta">2dp</dimen>
+
+    <!-- Tamaños de texto -->
+    <dimen name="texto_titulo_login">26sp</dimen>
+    <dimen name="texto_titulo_pantalla">20sp</dimen>
+    <dimen name="texto_titulo_item">16sp</dimen>
+    <dimen name="texto_cuerpo">15sp</dimen>
+    <dimen name="texto_secundario">13sp</dimen>
+</resources>

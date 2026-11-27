@@ -2,33 +2,58 @@ package com.devst.habittrack;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
-import androidx.appcompat.app.AlertDialog;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.devst.habittrack.adapter.HabitoAdapter;
 import com.devst.habittrack.model.Habito;
 import com.devst.habittrack.repository.HabitoRepositorio;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+/**
+ * Pantalla principal de HabitTrack.
+ * Permite crear, consultar en tiempo real, filtrar, editar y eliminar los hábitos
+ * del usuario autenticado mediante {@link HabitoRepositorio}.
+ */
+public class MainActivity extends AppCompatActivity implements HabitoAdapter.OnHabitoActionListener {
+
+    // Componentes visuales del layout activity_main.xml
+    private TextView tvUsuarioBienvenida;
+    private EditText etNombreHabito;
+    private EditText etCategoriaHabito;
+    private EditText etHoraHabito;
+    private EditText etBuscarHabito;
+    private Button btnGuardarHabito;
     private Button btnCancelarEdicion;
-    private EditText etNombre, etCategoria, etHora, etEstado;
-    private Button btnGuardar, btnCerrarSesion;
+    private Button btnCerrarSesion;
     private RecyclerView rvHabitos;
 
+    // Dependencias de autenticación y acceso a datos en Firestore
+    private FirebaseAuth autenticacion;
+    private FirebaseUser usuarioActual;
     private HabitoRepositorio repositorio;
-    private FirebaseAuth mAuth;
-    private HabitoAdapter adapter;
-    private List<Habito> listaHabitos;
+    private ListenerRegistration escuchaHabitos;
 
+    // Listas para respaldar todos los hábitos del usuario y los resultados filtrados en pantalla
+    private final List<Habito> listaCompleta = new ArrayList<>();
+    private final List<Habito> listaHabitos = new ArrayList<>();
+    private HabitoAdapter adaptador;
     private Habito habitoEnEdicion = null;
 
     @Override
@@ -36,152 +61,263 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mAuth = FirebaseAuth.getInstance();
-        repositorio = new HabitoRepositorio();
+        // Verifica que exista una sesión activa antes de inicializar la vista y Firestore
+        autenticacion = FirebaseAuth.getInstance();
+        usuarioActual = autenticacion.getCurrentUser();
 
-        if (mAuth.getCurrentUser() == null) {
-            startActivity(new Intent(this, LoginActivity.class));
-            finish();
+        if (usuarioActual == null) {
+            volverALogin();
             return;
         }
 
-        etNombre = findViewById(R.id.etNombre);
-        etCategoria = findViewById(R.id.etCategoria);
-        etHora = findViewById(R.id.etHora);
-        etEstado = findViewById(R.id.etEstado);
-        btnGuardar = findViewById(R.id.btnGuardar);
-        btnCerrarSesion = findViewById(R.id.btnCerrarSesion);
-        btnCancelarEdicion = findViewById(R.id.btnCancelarEdicion);
-        rvHabitos = findViewById(R.id.rvHabitos);
+        repositorio = new HabitoRepositorio();
 
-        listaHabitos = new ArrayList<>();
-        rvHabitos.setLayoutManager(new LinearLayoutManager(this));
-
-        adapter = new HabitoAdapter(listaHabitos, new HabitoAdapter.OnHabitoActionListener() {
-            @Override
-            public void onEditar(Habito habito) {
-                cargarParaEditar(habito);
-            }
-
-            @Override
-            public void onEliminar(Habito habito) {
-                confirmarEliminar(habito);
-            }
-        });
-        rvHabitos.setAdapter(adapter);
-        etHora.setOnClickListener(v -> mostrarSelectorHora());
-        btnGuardar.setOnClickListener(v -> guardarHabito());
-        btnCancelarEdicion.setOnClickListener(v -> limpiarFormulario());
-        btnCerrarSesion.setOnClickListener(v -> {
-            mAuth.signOut();
-            startActivity(new Intent(MainActivity.this, LoginActivity.class));
-            finish();
-        });
-
+        inicializarVistas();
+        configurarRecyclerView();
+        configurarEventos();
         cargarHabitosEnTiempoReal();
     }
 
-    private void guardarHabito() {
-        String nombre = etNombre.getText().toString().trim();
-        String categoria = etCategoria.getText().toString().trim();
-        String hora = etHora.getText().toString().trim();
-        String estado = etEstado.getText().toString().trim();
+    /**
+     * Vincula las vistas del layout y muestra el correo del usuario autenticado.
+     */
+    private void inicializarVistas() {
+        tvUsuarioBienvenida = findViewById(R.id.tvUsuarioBienvenida);
+        etNombreHabito = findViewById(R.id.etNombreHabito);
+        etCategoriaHabito = findViewById(R.id.etCategoriaHabito);
+        etHoraHabito = findViewById(R.id.etHoraHabito);
+        etBuscarHabito = findViewById(R.id.etBuscarHabito);
+        btnGuardarHabito = findViewById(R.id.btnGuardarHabito);
+        btnCancelarEdicion = findViewById(R.id.btnCancelarEdicion);
+        btnCerrarSesion = findViewById(R.id.btnCerrarSesion);
+        rvHabitos = findViewById(R.id.rvHabitos);
 
-        if (TextUtils.isEmpty(nombre) || TextUtils.isEmpty(categoria) ||
-                TextUtils.isEmpty(hora) || TextUtils.isEmpty(estado)) {
-            Toast.makeText(this, "Por favor, completa todos los campos", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String uid = mAuth.getCurrentUser().getUid();
-
-        if (habitoEnEdicion == null) {
-            Habito nuevo = new Habito(null, nombre, categoria, hora, estado, uid);
-            repositorio.crearHabito(nuevo)
-                    .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(this, "Hábito guardado en la nube", Toast.LENGTH_SHORT).show();
-                        limpiarFormulario();
-                    })
-                    .addOnFailureListener(e ->
-                            Toast.makeText(this, "Error al guardar: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-        } else {
-            habitoEnEdicion.setNombre(nombre);
-            habitoEnEdicion.setCategoria(categoria);
-            habitoEnEdicion.setHoraRecordatorio(hora);
-            habitoEnEdicion.setEstado(estado);
-
-            repositorio.actualizarHabito(habitoEnEdicion)
-                    .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(this, "Hábito actualizado", Toast.LENGTH_SHORT).show();
-                        limpiarFormulario();
-                    })
-                    .addOnFailureListener(e ->
-                            Toast.makeText(this, "Error al actualizar: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+        if (tvUsuarioBienvenida != null && usuarioActual.getEmail() != null) {
+            tvUsuarioBienvenida.setText("Usuario: " + usuarioActual.getEmail());
         }
     }
 
-    private void cargarHabitosEnTiempoReal() {
-        String uid = mAuth.getCurrentUser().getUid();
+    /**
+     * Configura el administrador de diseño y el adaptador del RecyclerView.
+     */
+    private void configurarRecyclerView() {
+        adaptador = new HabitoAdapter(listaHabitos, this);
+        rvHabitos.setLayoutManager(new LinearLayoutManager(this));
+        rvHabitos.setAdapter(adaptador);
+    }
 
-        repositorio.obtenerHabitosPorUsuario(uid)
-                .addSnapshotListener((value, error) -> {
+    /**
+     * Registra los listeners de botones y del campo de búsqueda en tiempo real.
+     */
+    private void configurarEventos() {
+        if (btnGuardarHabito != null) {
+            btnGuardarHabito.setOnClickListener(v -> guardarHabito());
+        }
+        if (btnCancelarEdicion != null) {
+            btnCancelarEdicion.setOnClickListener(v -> limpiarFormulario());
+        }
+        if (btnCerrarSesion != null) {
+            btnCerrarSesion.setOnClickListener(v -> cerrarSesion());
+        }
+        if (etBuscarHabito != null) {
+            etBuscarHabito.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    filtrarHabitos(s.toString());
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                }
+            });
+        }
+    }
+
+    /**
+     * Escucha los cambios en Firestore filtrados por el {@code uid} del usuario actual.
+     */
+    private void cargarHabitosEnTiempoReal() {
+        escuchaHabitos = repositorio.obtenerHabitosPorUsuario(usuarioActual.getUid())
+                .addSnapshotListener((snapshots, error) -> {
                     if (error != null) {
-                        Toast.makeText(this, "Error al consultar datos", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Error al cargar hábitos: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    if (value != null) {
-                        listaHabitos.clear();
-                        for (QueryDocumentSnapshot doc : value) {
-                            listaHabitos.add(doc.toObject(Habito.class));
+
+                    if (snapshots != null) {
+                        listaCompleta.clear();
+                        for (QueryDocumentSnapshot doc : snapshots) {
+                            Habito habito = doc.toObject(Habito.class);
+                            habito.setId(doc.getId());
+                            listaCompleta.add(habito);
                         }
-                        adapter.notifyDataSetChanged();
+                        String filtroActual = etBuscarHabito != null ? etBuscarHabito.getText().toString() : "";
+                        filtrarHabitos(filtroActual);
                     }
                 });
     }
 
-    private void cargarParaEditar(Habito habito) {
+    /**
+     * Filtra la lista visible según el texto ingresado por nombre o categoría.
+     *
+     * @param texto Texto de búsqueda ingresado por el usuario.
+     */
+    private void filtrarHabitos(String texto) {
+        String consulta = texto == null ? "" : texto.trim().toLowerCase();
+        listaHabitos.clear();
+
+        if (consulta.isEmpty()) {
+            listaHabitos.addAll(listaCompleta);
+        } else {
+            for (Habito habito : listaCompleta) {
+                String nombre = habito.getNombre() != null ? habito.getNombre().toLowerCase() : "";
+                String categoria = habito.getCategoria() != null ? habito.getCategoria().toLowerCase() : "";
+                if (nombre.contains(consulta) || categoria.contains(consulta)) {
+                    listaHabitos.add(habito);
+                }
+            }
+        }
+
+        adaptador.notifyDataSetChanged();
+    }
+
+    /**
+     * Valida los campos del formulario y crea un nuevo hábito o actualiza el existente.
+     */
+    private void guardarHabito() {
+        String nombre = etNombreHabito.getText().toString().trim();
+        String categoria = etCategoriaHabito.getText().toString().trim();
+        String hora = etHoraHabito.getText().toString().trim();
+
+        if (TextUtils.isEmpty(nombre)) {
+            etNombreHabito.setError("Ingresa el nombre del hábito");
+            return;
+        }
+        if (TextUtils.isEmpty(categoria)) {
+            etCategoriaHabito.setError("Ingresa una categoría");
+            return;
+        }
+        if (TextUtils.isEmpty(hora)) {
+            etHoraHabito.setError("Ingresa la hora (ej. 18:30)");
+            return;
+        }
+
+        if (habitoEnEdicion == null) {
+            // Orden exacto del constructor Habito: (id, nombre, categoria, horaRecordatorio, estado, uid)
+            Habito nuevoHabito = new Habito(
+                    null,
+                    nombre,
+                    categoria,
+                    hora,
+                    "Pendiente",
+                    usuarioActual.getUid()
+            );
+
+            repositorio.crearHabito(nuevoHabito)
+                    .addOnSuccessListener(unused -> {
+                        Toast.makeText(this, "Hábito guardado", Toast.LENGTH_SHORT).show();
+                        limpiarFormulario();
+                    })
+                    .addOnFailureListener(e ->
+                            Toast.makeText(this, "Error al guardar: " + e.getMessage(), Toast.LENGTH_LONG).show());
+        } else {
+            habitoEnEdicion.setNombre(nombre);
+            habitoEnEdicion.setCategoria(categoria);
+            habitoEnEdicion.setHoraRecordatorio(hora);
+
+            repositorio.actualizarHabito(habitoEnEdicion)
+                    .addOnSuccessListener(unused -> {
+                        Toast.makeText(this, "Hábito actualizado", Toast.LENGTH_SHORT).show();
+                        limpiarFormulario();
+                    })
+                    .addOnFailureListener(e ->
+                            Toast.makeText(this, "Error al actualizar: " + e.getMessage(), Toast.LENGTH_LONG).show());
+        }
+    }
+
+    /**
+     * Carga los datos del hábito seleccionado en el formulario para editarlo.
+     *
+     * @param habito Hábito seleccionado desde el adaptador.
+     */
+    @Override
+    public void onEditar(Habito habito) {
+        if (habito == null) {
+            return;
+        }
         habitoEnEdicion = habito;
-        etNombre.setText(habito.getNombre());
-        etCategoria.setText(habito.getCategoria());
-        etHora.setText(habito.getHoraRecordatorio());
-        etEstado.setText(habito.getEstado());
-        btnGuardar.setText("Actualizar Hábito");
-        btnCancelarEdicion.setVisibility(android.view.View.VISIBLE);
+        etNombreHabito.setText(habito.getNombre());
+        etCategoriaHabito.setText(habito.getCategoria());
+        etHoraHabito.setText(habito.getHoraRecordatorio());
+        if (btnGuardarHabito != null) {
+            btnGuardarHabito.setText("Actualizar Hábito");
+        }
+        if (btnCancelarEdicion != null) {
+            btnCancelarEdicion.setVisibility(View.VISIBLE);
+        }
     }
 
-    private void confirmarEliminar(Habito habito) {
-        new AlertDialog.Builder(this)
-                .setTitle("Eliminar Hábito")
-                .setMessage("¿Deseas eliminar '" + habito.getNombre() + "'?")
-                .setPositiveButton("Sí, eliminar", (dialog, which) -> {
-                    repositorio.eliminarHabito(habito.getId())
-                            .addOnSuccessListener(aVoid ->
-                                    Toast.makeText(this, "Hábito eliminado", Toast.LENGTH_SHORT).show())
-                            .addOnFailureListener(e ->
-                                    Toast.makeText(this, "Error al eliminar", Toast.LENGTH_SHORT).show());
-                })
-                .setNegativeButton("Cancelar", null)
-                .show();
+    /**
+     * Elimina el hábito seleccionado de Cloud Firestore.
+     *
+     * @param habito Hábito a eliminar.
+     */
+    @Override
+    public void onEliminar(Habito habito) {
+        if (habito == null || TextUtils.isEmpty(habito.getId())) {
+            Toast.makeText(this, "No se pudo identificar el hábito a eliminar", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        repositorio.eliminarHabito(habito.getId())
+                .addOnSuccessListener(unused ->
+                        Toast.makeText(this, "Hábito eliminado", Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Error al eliminar: " + e.getMessage(), Toast.LENGTH_LONG).show());
     }
 
+    /**
+     * Restablece el formulario y sale del modo edición.
+     */
     private void limpiarFormulario() {
-        etNombre.setText("");
-        etCategoria.setText("");
-        etHora.setText("");
-        etEstado.setText("");
         habitoEnEdicion = null;
-        btnGuardar.setText("Guardar Hábito");
-        btnCancelarEdicion.setVisibility(android.view.View.GONE);
+        etNombreHabito.setText("");
+        etCategoriaHabito.setText("");
+        etHoraHabito.setText("");
+        if (btnGuardarHabito != null) {
+            btnGuardarHabito.setText("Guardar Hábito");
+        }
+        if (btnCancelarEdicion != null) {
+            btnCancelarEdicion.setVisibility(View.GONE);
+        }
     }
 
-    private void mostrarSelectorHora() {
-        java.util.Calendar calendario = java.util.Calendar.getInstance();
-        int horaActual = calendario.get(java.util.Calendar.HOUR_OF_DAY);
-        int minutoActual = calendario.get(java.util.Calendar.MINUTE);
+    /**
+     * Cierra la sesión actual en Firebase Authentication y regresa a {@link LoginActivity}.
+     */
+    private void cerrarSesion() {
+        autenticacion.signOut();
+        volverALogin();
+    }
 
-        new android.app.TimePickerDialog(this, (view, hourOfDay, minute) -> {
-            String horaFormateada = String.format(java.util.Locale.getDefault(), "%02d:%02d", hourOfDay, minute);
-            etHora.setText(horaFormateada);
-        }, horaActual, minutoActual, true).show();
+    /**
+     * Navega hacia {@link LoginActivity} y finaliza {@link MainActivity}.
+     */
+    private void volverALogin() {
+        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (escuchaHabitos != null) {
+            escuchaHabitos.remove();
+        }
     }
 }

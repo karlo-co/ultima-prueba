@@ -1,62 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Tarjeta individual de un hábito dentro del RecyclerView -->
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="3dp">
+    android:layout_marginBottom="@dimen/espacio_pequeno"
+    app:cardBackgroundColor="@color/superficie_tarjeta"
+    app:cardCornerRadius="@dimen/radio_tarjeta"
+    app:cardElevation="@dimen/elevacion_tarjeta">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="12dp">
+        android:padding="@dimen/espacio_mediano">
 
         <TextView
             android:id="@+id/tvNombreHabito"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Nombre del Hábito"
-            android:textSize="18sp"
+            android:text="@string/ejemplo_nombre_habito"
+            android:textColor="@color/texto_principal"
+            android:textSize="@dimen/texto_titulo_item"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/tvDetalleHabito"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Categoría • 08:30 hrs"
-            android:textSize="14sp"
-            android:layout_marginTop="4dp" />
+            android:layout_marginTop="@dimen/espacio_minimo"
+            android:text="@string/ejemplo_detalle_habito"
+            android:textColor="@color/texto_secundario"
+            android:textSize="@dimen/texto_secundario" />
 
         <TextView
             android:id="@+id/tvEstadoHabito"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Estado: Pendiente"
-            android:textStyle="italic"
-            android:layout_marginTop="4dp" />
+            android:layout_marginTop="@dimen/espacio_minimo"
+            android:text="@string/ejemplo_estado_habito"
+            android:textColor="@color/verde_salud_primario"
+            android:textSize="@dimen/texto_secundario"
+            android:textStyle="italic" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/espacio_pequeno"
             android:gravity="end"
-            android:layout_marginTop="8dp">
+            android:orientation="horizontal">
 
             <Button
                 android:id="@+id/btnEditar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Editar"
-                android:layout_marginEnd="8dp" />
+                android:layout_marginEnd="@dimen/espacio_pequeno"
+                android:backgroundTint="@color/verde_salud_primario"
+                android:text="@string/btn_editar"
+                android:textColor="@color/texto_sobre_verde" />
 
             <Button
                 android:id="@+id/btnEliminar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Eliminar" />
+                android:backgroundTint="@color/rojo_eliminar"
+                android:text="@string/btn_eliminar"
+                android:textColor="@color/texto_sobre_verde" />
         </LinearLayout>
 
     </LinearLayout>
+
 </androidx.cardview.widget.CardView>
